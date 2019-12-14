@@ -51,7 +51,7 @@ class RedisObj
         $this->redis->connect($this->host, $this->port, $this->attr['timeout']);
 
         if ($config['auth']) {
-            $this->auth($config['auth']);
+            $this->redis->auth($config['auth']);
             $this->auth = $config['auth'];
         }
 
@@ -66,8 +66,18 @@ class RedisObj
      * @param $attr
      * @return Redis
      */
-    public static function getInstance($config, $attr = [])
+    public static function getInstance($redisName)
     {
+        $configs = config('redis.');
+        if(!empty($configs[$redisName])){
+            $attr['db_id'] = $configs[$redisName]['db'];
+            $config['host'] = $configs[$redisName]['host'];
+            $config['port'] = $configs[$redisName]['port'];
+            $config['auth'] = $configs[$redisName]['password'];
+            unset($configs);
+        } else {
+            throw new \Exception('redis配置不存在');
+        }
         //如果是一个字符串，将其认为是数据库的ID号。以简化写法。
         if (!is_array($attr)) {
             $dbId = $attr;
@@ -87,20 +97,20 @@ class RedisObj
 
             //如果不是0号库，选择一下数据库。
             if ($attr['db_id'] != 0) {
-                static::$_instance[$k]->select($attr['db_id']);
+                static::$_instance[$k]->getRedis()->select($attr['db_id']);
             }
         } elseif (time() > static::$_instance[$k]->expireTime) {
-            static::$_instance[$k]->close();
+            static::$_instance[$k]->getRedis()->close();
             static::$_instance[$k] = new self($config, $attr);
             static::$_instance[$k]->k = $k;
             static::$_instance[$k]->dbId = $attr['db_id'];
 
             //如果不是0号库，选择一下数据库。
             if ($attr['db_id'] != 0) {
-                static::$_instance[$k]->select($attr['db_id']);
+                static::$_instance[$k]->getRedis()->select($attr['db_id']);
             }
         }
-        return static::$_instance[$k];
+        return static::$_instance[$k]->getRedis();
     }
 
     private function __clone()
