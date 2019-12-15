@@ -10,6 +10,8 @@
 // +----------------------------------------------------------------------
 
 use think\facade\Env;
+use app\common\lib\Task;
+use think\facade\Log;
 
 // +----------------------------------------------------------------------
 // | Swoole设置 php think swoole命令行下有效
@@ -35,4 +37,21 @@ return [
     'timer'                 => true,//是否开启系统定时器
     'interval'              => 500,//系统定时器 时间间隔
     'task_worker_num'       => 1,//swoole 任务工作进程数量
+
+    /**
+     * 自定义投递任务
+     * @param swoole_server $serv
+     * @param int $taskId
+     * @param int $srcWorkerId
+     * @param mixed $data
+     */
+    'Task' => function($serv, $taskId, $srcWorkerId, $data){
+        $taskObj = new Task();
+        $classMethods = get_class_methods(Task::class);
+        Log::write(json_encode($data) . '****************************');
+        if (!in_array($data['method'], $classMethods)) {
+            return 'method:'.$data['method'].' not find in'.Task::class;
+        }
+        return call_user_func_array([$taskObj, $data['method']], $data['params']);
+    },
 ];

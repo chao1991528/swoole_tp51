@@ -9,14 +9,11 @@ class Sms
 {
     public function send($mobile, $code, $type)
     {
-        $redis = RedisObj::getInstance(Constant::REDIS_ONE);
         $smsConfig = config('sms.');
         if(empty($smsConfig[$type])){
             throw new \Exception('短信配置信息不存在');
         }
-        echo 222;
-        //todo 根据短信配置设置短信模板
-        $redis->set(sprintf(RedisKey::MOBILE_SMS_CODE, $mobile, $type), $code, $smsConfig[$type]['timeout']);
+        //todo 调用阿里大于sdk发送短信
         return true;
     }
 

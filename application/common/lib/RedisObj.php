@@ -7,7 +7,11 @@
 
 namespace app\common\lib;
 
-
+/**
+ * Class RedisObj
+ * @package app\common\lib
+ * 同步php redis类
+ */
 class RedisObj
 {
     private $redis;

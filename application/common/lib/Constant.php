@@ -13,6 +13,7 @@ namespace app\common\lib;
 class Constant
 {
     const REDIS_ONE = 'index_redis';
+    const REDIS_ASYNC = 'redis_async';
 
     const SMS_TYPE_LOGIN = 'login';
 }
